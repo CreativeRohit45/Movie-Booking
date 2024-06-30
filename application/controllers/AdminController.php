@@ -51,24 +51,21 @@ class AdminController extends CI_Controller {
 			$this->load->view('admin/adminView',$data);
 		} else {
 			// Admin session not found, load the login view
-			$this->load->view('admin_login');
+			$this->load->view('admin/adminLogin');
 		}
 	}
 
-    public function viewRole() {
+    public function addShow() {
 		// Check if admin session is set
 		if ($this->session->userdata('admin_logged_in')) {
 			// Fetch all roles from the database
-			$data['active_tab'] = 'view_roles';
-			$data['roles'] = $this->AdminModel->get_All_Roles();
-	
+			$data['active_tab'] = 'add_show';
 			// Load the view to display the roles
 			$this->load->view('header', $data); 
-			$this->load->view('admin_view/view_role', $data);
-			$this->load->view('footer');
+			$this->load->view('admin/addShow', $data);
 		} else {
 			// Admin session not found, redirect to login page or show error message
-			$this->load->view('admin_login');// Redirect to the login page
+			$this->load->view('admin/adminLogin');// Redirect to the login page
 		}
 	}
 }
