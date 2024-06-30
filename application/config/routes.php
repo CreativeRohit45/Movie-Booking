@@ -49,7 +49,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Examples:	my-controller/index	-> my_controller/index
 |		my-controller/my-method	-> my_controller/my_method
 */
-$route['default_controller'] = 'AdminController';
+$route['default_controller'] = 'UserController';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
@@ -61,3 +61,10 @@ $route['addMovie'] = $route['AdminController'].'/addMovie';
 $route['admin/deleteMovie/(:num)'] = $route['AdminController'].'/deleteMovie/$1'; // Edit movie form
 $route['admin/editMovie/(:num)'] = $route['AdminController'].'/editMovie/$1'; // Edit movie form
 $route['admin/updateMovie/(:num)'] = $route['AdminController'].'/updateMovie/$1'; // Update movie action
+$route['viewBookings'] = $route['AdminController'].'/viewBookings';
+
+
+$route['adminlogout'] = $route['AdminController'].'/logout';
+
+$route['UserController'] = 'UserController';
+$route['viewMovie/(:num)'] = $route['UserController'].'/viewMovie/$1';

@@ -80,7 +80,7 @@ class AdminController extends CI_Controller {
 
         if ($this->form_validation->run() == FALSE) {
             // If validation fails, reload the form with validation errors
-            $this->load->view('addShow');
+            redirect('addShow');
         } else {
             // Form validation passed
             $screen_number = $this->input->post('screen_number');
@@ -88,7 +88,6 @@ class AdminController extends CI_Controller {
 
             // Check if a movie is already scheduled on the same screen at the same time
             $movieExists = $this->AdminModel->checkMovieExists($screen_number, $this->input->post('movie_time'), $movie_date);
-
             if ($movieExists) {
                 // Movie already scheduled
                 $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
@@ -96,15 +95,17 @@ class AdminController extends CI_Controller {
             } else {
                 // Handle file upload
                 $photo = file_get_contents($_FILES['movie_photo']['tmp_name']);
-
+                $movie_id = 'MOV_' . uniqid();
                 // Prepare data for insertion
                 $data = [
+                    'movie_id' => $movie_id,
                     'photo' => $photo,
                     'name' => $this->input->post('movie_name'),
                     'genre' => $this->input->post('movie_genre'),
                     'screen_number' => $screen_number,
-                    'time' => $this->input->post('movie_time'),
+                    'time' => json_encode($this->input->post('movie_time')),
                     'price' => $this->input->post('seat_price'),
+                    'total_seats' => 60,
                     'date' => $movie_date
                 ];
 
@@ -150,7 +151,7 @@ class AdminController extends CI_Controller {
     
         // Fetch movie details from database
         $data['movie'] = $this->AdminModel->getMovieById($movie_id);
-    
+        $data['selected_times'] = $this->AdminModel->getSelectedTimesByMovieId($movie_id);
         if (!$data['movie']) {
             // Movie not found
             $this->session->set_flashdata('error', 'Movie not found');
@@ -189,7 +190,7 @@ class AdminController extends CI_Controller {
     
             // Check if a movie is already scheduled on the same screen at the same time, excluding current movie
             $movieExists = $this->AdminModel->checkMovieExistsExclude($movie_id, $screen_number, $this->input->post('movie_time'), $movie_date);
-    
+            $selected_times = $this->input->post('movie_time');
             if ($movieExists) {
                 // Movie already scheduled
                 $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
@@ -200,13 +201,13 @@ class AdminController extends CI_Controller {
                     $photo = file_get_contents($_FILES['movie_photo']['tmp_name']);
                     $data['photo'] = $photo;
                 }
-    
+                
                 // Prepare data for update
                 $data = [
                     'name' => $this->input->post('movie_name'),
                     'genre' => $this->input->post('movie_genre'),
                     'screen_number' => $screen_number,
-                    'time' => $this->input->post('movie_time'),
+                    'time' => json_encode($selected_times),
                     'price' => $this->input->post('seat_price'),
                     'date' => $movie_date
                 ];
@@ -224,6 +225,8 @@ class AdminController extends CI_Controller {
             }
         }
     }
+
+
 
      // Custom callback function to check file upload
      public function file_check($str) {
@@ -255,6 +258,13 @@ class AdminController extends CI_Controller {
             return FALSE;
         }
     }
+
+    public function logout() {
+		// Unset admin session data
+		$this->session->unset_userdata('admin_logged_in');
+		// Redirect to the login page
+		$this->load->view('admin/adminLogin');
+	}
     
     
 }

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3498db, #8e44ad);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .movies-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 100px;
+            padding: 20px;
+        }
+
+        .now-showing {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .movies-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .movie-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 250px;
+            transition: transform 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 70%;
+        }
+
+        .movie-card h3 {
+            margin: 0;
+            padding: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .movie-card p {
+            margin: 0;
+            padding: 0 10px 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="movies-container">
+        <div class="now-showing">Now Showing</div>
+        <div class="movies-grid">
+            <?php foreach ($movies as $movie): ?>
+                <a href="<?php echo base_url('viewMovie/' . $movie->id); ?>" class="movie-card">
+                    <img src="data:image/jpeg;base64,<?php echo base64_encode($movie->photo); ?>" alt="Movie Photo">
+                    <h3><?php echo $movie->name; ?></h3>
+                    <p><?php echo $movie->genre; ?></p>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</body>
+</html>

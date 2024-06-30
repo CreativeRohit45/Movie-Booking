@@ -77,12 +77,13 @@
                 <option value="2">Screen 2</option>
             </select>
 
-            <label for="movie_time">Movie Timing:</label>
-            <select id="movie_time" name="movie_time" required>
+           <label for="movie_time">Movie Timing:</label>
+            <select id="movie_time" name="movie_time[]" required multiple>
                 <option value="10 AM - 1 PM">10:00 AM - 1:00 PM</option>
                 <option value="2 PM - 5 PM">2:00 PM - 5:00 PM</option>
                 <option value="6 PM - 9 PM">6:00 PM - 9:00 PM</option>
             </select>
+
 
             <label for="seat_price">Price per Seat:</label>
             <input type="number" id="seat_price" name="seat_price" min="0" step="0.01" required>

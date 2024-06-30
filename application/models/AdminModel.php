@@ -83,6 +83,13 @@ class AdminModel extends CI_Model {
         return $this->db->update('movies', $data);
     }
 
+    public function getSelectedTimesByMovieId($movie_id) {
+        $query = $this->db->select('time')
+                          ->where('id', $movie_id)
+                          ->get('movies');
+                          
+        return $query->result_array();
+    }
 
 
 }

@@ -100,12 +100,19 @@
             </div>
             <div>
                 <label for="movie_time">Movie Time</label>
-                <select id="movie_time" name="movie_time" required>
-                    <option value="10 AM - 1 PM" <?php echo set_select('movie_time', '10 AM - 1 PM', ($movie->time == '10 AM - 1 PM')); ?>>10 AM - 1 PM</option>
-                    <option value="2 PM - 5 PM" <?php echo set_select('movie_time', '2 PM - 5 PM', ($movie->time == '2 PM - 5 PM')); ?>>2 PM - 5 PM</option>
-                    <option value="6 PM - 9 PM" <?php echo set_select('movie_time', '6 PM - 9 PM', ($movie->time == '6 PM - 9 PM')); ?>>6 PM - 9 PM</option>
+                <select id="movie_time" name="movie_time[]" required>
+                    <?php foreach ($selected_times as $time): ?>
+                        <option value="<?php echo $time['time']; ?>" <?php echo ($time['time'] == $movie->time) ? 'selected' : ''; ?>>
+                            <?php echo $time['time']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <option value="10 AM - 1 PM" <?php echo (in_array('10 AM - 1 PM', $time['time'])) ? 'selected' : ''; ?>>10 AM - 1 PM</option>
+                    <option value="2 PM - 5 PM" <?php echo (in_array('2 PM - 5 PM', $time['time'])) ? 'selected' : ''; ?>>2 PM - 5 PM</option>
+                    <option value="6 PM - 9 PM" <?php echo (in_array('6 PM - 9 PM', $time['time'])) ? 'selected' : ''; ?>>6 PM - 9 PM</option>
                 </select>
             </div>
+
+
             <div>
                 <label for="seat_price">Seat Price</label>
                 <input type="text" id="seat_price" name="seat_price" value="<?php echo set_value('seat_price', $movie->price); ?>" required>
