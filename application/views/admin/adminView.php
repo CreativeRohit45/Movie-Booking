@@ -57,6 +57,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-right: 5px;
+            text-decoration: none;
         }
 
         .btn-primary {
@@ -67,10 +68,19 @@
         .btn-primary:hover {
             background-color: #2980b9;
         }
+
+        .btn-secondary {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
         <h1>Running Shows</h1>
         <table>
             <thead>
@@ -81,20 +91,31 @@
                     <th>Show Time</th>
                     <th>Screen</th>
                     <th>Price</th>
+                    <th>Seats Left</th>
                     <th>Edit</th>
+                    <th>Delete</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Example Data - Replace with PHP code to dynamically generate rows -->
-                <tr>
-                    <td>1</td>
-                    <td>Movie A</td>
-                    <td>10:00 AM</td>
-                    <td>Screen 1</td>
-                    <td></td>
-                    <td></td>
-                    <td><button class="btn btn-primary">Edit</button></td>
-                </tr>
+                <?php if (!empty($movies)): ?>
+                    <?php foreach ($movies as $index => $movie): ?>
+                        <tr>
+                            <td><?php echo $index + 1; ?></td>
+                            <td><?php echo $movie->name; ?></td>
+                            <td><?php echo $movie->date; ?></td>
+                            <td><?php echo $movie->time; ?></td>
+                            <td><?php echo $movie->screen_number; ?></td>
+                            <td><?php echo $movie->price; ?></td>
+                            <td><!-- Add logic to display seats left --></td>
+                            <td><a href="<?php echo base_url('admin/editMovie/' . $movie->id); ?>" class="btn btn-primary">Edit</a></td>
+                            <td><a href="<?php echo base_url('admin/deleteMovie/' . $movie->id); ?>" class="btn btn-secondary">Delete</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="9">No movies found</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

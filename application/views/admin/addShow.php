@@ -68,6 +68,9 @@
             <label for="movie_name">Movie Name:</label>
             <input type="text" id="movie_name" name="movie_name" required>
 
+            <label for="movie_genre">Movie Genre:</label>
+            <input type="text" id="movie_genre" name="movie_genre" required>
+
             <label for="screen_number">Screen Number:</label>
             <select id="screen_number" name="screen_number" required>
                 <option value="1">Screen 1</option>

@@ -17,6 +17,71 @@ class AdminModel extends CI_Model {
         }
     }
 
+    public function checkMovieExists($screen_number, $movie_time, $movie_date) {
+        $this->db->where('screen_number', $screen_number);
+        $this->db->where('time', $movie_time);
+        $this->db->where('date', $movie_date);
+        $query = $this->db->get('movies');
+        
+        return $query->num_rows() > 0;
+    }
+
+    public function checkMovieExistsExclude($screen_number, $movie_time, $movie_date, $exclude_id) {
+        $this->db->where('screen_number', $screen_number);
+        $this->db->where('time', $movie_time);
+        $this->db->where('date', $movie_date);
+        $this->db->where('id !=', $exclude_id);
+        $query = $this->db->get('movies');
+    
+        if ($query->num_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+
+    // Function to insert a new movie into the database
+    public function insertMovie($data) {
+        return $this->db->insert('movies', $data);
+    }
+
+    public function getAllMovies() {
+        $query = $this->db->get('movies');
+        return $query->result();
+    }
+
+    public function deleteMovie($movie_id) {
+        // Perform deletion based on movie ID
+        $this->db->where('id', $movie_id);
+        $this->db->delete('movies');
+    
+        return $this->db->affected_rows() > 0;
+    }
+    
+    public function getMovieById($movie_id) {
+        // Ensure $movie_id is an integer
+        $movie_id = (int) $movie_id;
+
+        // Query to fetch movie details by ID
+        $query = $this->db->get_where('movies', array('id' => $movie_id));
+
+        // Check if a record was found
+        if ($query->num_rows() > 0) {
+            return $query->row(); // Return the movie object
+        } else {
+            return null; // Movie not found
+        }
+    }
+
+    public function updateMovie($movie_id, $data) {
+        // Ensure $movie_id is an integer
+        $movie_id = (int) $movie_id;
+
+        // Update movie record based on ID
+        $this->db->where('id', $movie_id);
+        return $this->db->update('movies', $data);
+    }
 
 
 

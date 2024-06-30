@@ -46,6 +46,7 @@ class AdminController extends CI_Controller {
 		if ($this->session->userdata('admin_logged_in')) {
 			// Get the selected order from the form data or from session if not available
             $data['active_tab'] = 'home';
+            $data['movies'] = $this->AdminModel->getAllMovies();
 			// Load the view and pass the data
 			$this->load->view('header',$data);
 			$this->load->view('admin/adminView',$data);
@@ -58,9 +59,7 @@ class AdminController extends CI_Controller {
     public function addShow() {
 		// Check if admin session is set
 		if ($this->session->userdata('admin_logged_in')) {
-			// Fetch all roles from the database
 			$data['active_tab'] = 'add_show';
-			// Load the view to display the roles
 			$this->load->view('header', $data); 
 			$this->load->view('admin/addShow', $data);
 		} else {
@@ -68,4 +67,194 @@ class AdminController extends CI_Controller {
 			$this->load->view('admin/adminLogin');// Redirect to the login page
 		}
 	}
+
+    public function addMovie() {
+        // Set validation rules
+        $this->form_validation->set_rules('movie_name', 'Movie Name', 'required|min_length[3]|max_length[255]');
+        $this->form_validation->set_rules('movie_genre', 'Movie Genre', 'required|min_length[3]|max_length[255]');
+        $this->form_validation->set_rules('screen_number', 'Screen Number', 'required|integer');
+        $this->form_validation->set_rules('movie_time', 'Movie Time', 'required');
+        $this->form_validation->set_rules('seat_price', 'Seat Price', 'required|numeric');
+        $this->form_validation->set_rules('movie_date', 'Movie Date', 'required|callback_valid_date|callback_tomorrow_date');
+        $this->form_validation->set_rules('movie_photo', 'Movie Photo', 'callback_file_check');
+
+        if ($this->form_validation->run() == FALSE) {
+            // If validation fails, reload the form with validation errors
+            $this->load->view('addShow');
+        } else {
+            // Form validation passed
+            $screen_number = $this->input->post('screen_number');
+            $movie_date = $this->input->post('movie_date');
+
+            // Check if a movie is already scheduled on the same screen at the same time
+            $movieExists = $this->AdminModel->checkMovieExists($screen_number, $this->input->post('movie_time'), $movie_date);
+
+            if ($movieExists) {
+                // Movie already scheduled
+                $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
+                redirect('addShow'); // Redirect back to the form
+            } else {
+                // Handle file upload
+                $photo = file_get_contents($_FILES['movie_photo']['tmp_name']);
+
+                // Prepare data for insertion
+                $data = [
+                    'photo' => $photo,
+                    'name' => $this->input->post('movie_name'),
+                    'genre' => $this->input->post('movie_genre'),
+                    'screen_number' => $screen_number,
+                    'time' => $this->input->post('movie_time'),
+                    'price' => $this->input->post('seat_price'),
+                    'date' => $movie_date
+                ];
+
+                // Insert data into the database
+                if ($this->AdminModel->insertMovie($data)) {
+                    // Success
+                    $this->session->set_flashdata('success', 'Movie added successfully');
+                    redirect('adminView'); // Redirect to movies page
+                } else {
+                    // Error
+                    $this->session->set_flashdata('error', 'Failed to add movie');
+                    redirect('addShow'); // Redirect back to the form
+                }
+            }
+        }
+    }
+
+    public function deleteMovie($movie_id) {
+        // Check if movie ID is provided and numeric
+        if (!is_numeric($movie_id)) {
+            $this->session->set_flashdata('error', 'Invalid movie ID');
+            redirect('adminView'); // Redirect back to movies page
+        }
+    
+        // Perform deletion
+        if ($this->AdminModel->deleteMovie($movie_id)) {
+            // Deletion successful
+            $this->session->set_flashdata('success', 'Movie deleted successfully');
+        } else {
+            // Deletion failed
+            $this->session->set_flashdata('error', 'Failed to delete movie');
+        }
+    
+        redirect('adminView'); // Redirect back to movies page
+    }
+
+    public function editMovie($movie_id) {
+        // Check if movie ID is provided and numeric
+        if (!is_numeric($movie_id)) {
+            $this->session->set_flashdata('error', 'Invalid movie ID');
+            redirect('adminView'); // Redirect back to movies page
+        }
+    
+        // Fetch movie details from database
+        $data['movie'] = $this->AdminModel->getMovieById($movie_id);
+    
+        if (!$data['movie']) {
+            // Movie not found
+            $this->session->set_flashdata('error', 'Movie not found');
+            redirect('adminView'); // Redirect back to movies page
+        }
+    
+        // Load edit view with movie details
+        $data['active_tab'] = 'home';
+		$this->load->view('header', $data); 
+        $this->load->view('admin/editMovie', $data);
+    }
+    
+    public function updateMovie($movie_id) {
+        // Check if movie ID is provided and numeric
+        if (!is_numeric($movie_id)) {
+            $this->session->set_flashdata('error', 'Invalid movie ID');
+            redirect('adminView'); // Redirect back to movies page
+        }
+    
+        // Set validation rules
+        $this->form_validation->set_rules('movie_name', 'Movie Name', 'required|min_length[3]|max_length[255]');
+        $this->form_validation->set_rules('movie_genre', 'Movie Genre', 'required|min_length[3]|max_length[255]');
+        $this->form_validation->set_rules('screen_number', 'Screen Number', 'required|integer');
+        $this->form_validation->set_rules('movie_time', 'Movie Time', 'required');
+        $this->form_validation->set_rules('seat_price', 'Seat Price', 'required|numeric');
+        $this->form_validation->set_rules('movie_date', 'Movie Date', 'required|callback_valid_date|callback_tomorrow_date');
+    
+        if ($this->form_validation->run() == FALSE) {
+            // If validation fails, reload the edit form with validation errors
+            $data['movie'] = (object) $this->input->post(); // Preserve form input
+            $this->load->view('editMovie', $data);
+        } else {
+            // Form validation passed
+            $screen_number = $this->input->post('screen_number');
+            $movie_date = $this->input->post('movie_date');
+    
+            // Check if a movie is already scheduled on the same screen at the same time, excluding current movie
+            $movieExists = $this->AdminModel->checkMovieExistsExclude($movie_id, $screen_number, $this->input->post('movie_time'), $movie_date);
+    
+            if ($movieExists) {
+                // Movie already scheduled
+                $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
+                redirect('adminView'); // Redirect back to movies page
+            } else {
+                // Handle file upload if applicable
+                if (!empty($_FILES['movie_photo']['name'])) {
+                    $photo = file_get_contents($_FILES['movie_photo']['tmp_name']);
+                    $data['photo'] = $photo;
+                }
+    
+                // Prepare data for update
+                $data = [
+                    'name' => $this->input->post('movie_name'),
+                    'genre' => $this->input->post('movie_genre'),
+                    'screen_number' => $screen_number,
+                    'time' => $this->input->post('movie_time'),
+                    'price' => $this->input->post('seat_price'),
+                    'date' => $movie_date
+                ];
+    
+                // Update movie in the database
+                if ($this->AdminModel->updateMovie($movie_id, $data)) {
+                    // Success
+                    $this->session->set_flashdata('success', 'Movie updated successfully');
+                } else {
+                    // Error
+                    $this->session->set_flashdata('error', 'Failed to update movie');
+                }
+    
+                redirect('adminView'); // Redirect back to movies page
+            }
+        }
+    }
+
+     // Custom callback function to check file upload
+     public function file_check($str) {
+        if (empty($_FILES['movie_photo']['name'])) {
+            $this->form_validation->set_message('file_check', 'The {field} field is required');
+            return FALSE;
+        } else {
+            return TRUE;
+        }
+    }
+
+    // Custom callback function to check if the date is valid
+    public function valid_date($date) {
+        if (DateTime::createFromFormat('Y-m-d', $date) !== FALSE) {
+            return TRUE;
+        } else {
+            $this->form_validation->set_message('valid_date', 'The {field} field must contain a valid date (YYYY-MM-DD)');
+            return FALSE;
+        }
+    }
+
+    // Custom callback function to check if the date is tomorrow or later
+    public function tomorrow_date($date) {
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+        if ($date >= $tomorrow) {
+            return TRUE;
+        } else {
+            $this->form_validation->set_message('tomorrow_date', 'The {field} must be selected from tomorrow onwards.');
+            return FALSE;
+        }
+    }
+    
+    
 }
