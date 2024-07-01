@@ -67,4 +67,7 @@ $route['viewBookings'] = $route['AdminController'].'/viewBookings';
 $route['adminlogout'] = $route['AdminController'].'/logout';
 
 $route['UserController'] = 'UserController';
+$route['userHome'] = 'UserController';
+$route['userRegister'] = $route['UserController'].'/registerUser';
+$route['userLogin'] = $route['UserController'].'/loginUser';
 $route['viewMovie/(:num)'] = $route['UserController'].'/viewMovie/$1';

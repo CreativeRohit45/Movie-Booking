@@ -42,7 +42,7 @@
         .navbar .nav-list a {
             color: white;
             text-decoration: none;
-            padding: 10px;
+            padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
         }
@@ -80,9 +80,9 @@
 <body>
     <nav class="navbar">
         <ul class="nav-list">
-            <li <?php if ($active_tab == 'home') echo 'class="active"'; ?>><a href="<?php echo base_url('user/home')?>">Home</a></li>
-            <li <?php if ($active_tab == 'register') echo 'class="active"'; ?>><a href="<?php echo base_url('user/register')?>">Register</a></li>
-            <li <?php if ($active_tab == 'login') echo 'class="active"'; ?>><a href="<?php echo base_url('user/login')?>">Login</a></li>
+            <li <?php if ($active_tab == 'home') echo 'class="active"'; ?>><a href="<?php echo base_url('userHome')?>">Home</a></li>
+            <li <?php if ($active_tab == 'register') echo 'class="active"'; ?>><a href="<?php echo base_url('userRegister')?>">Register</a></li>
+            <li <?php if ($active_tab == 'login') echo 'class="active"'; ?>><a href="<?php echo base_url('userLogin')?>">Login</a></li>
         </ul>
     </nav>
 </body>

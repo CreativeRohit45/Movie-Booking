@@ -18,4 +18,16 @@ class UserController extends CI_Controller {
         $this->load->view('user/bookMovie',$data);
     }
 
+    public function registerUser(){
+        $data['active_tab'] = 'register';
+        $this->load->view('user/header',$data);
+        $this->load->view('user/userRegister',$data);
+    }
+
+    public function loginUser(){
+        $data['active_tab'] = 'login';
+        $this->load->view('user/header',$data);
+        $this->load->view('user/userLogin',$data);
+    }
+
 }
