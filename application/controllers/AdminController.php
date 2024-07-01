@@ -177,22 +177,27 @@ class AdminController extends CI_Controller {
         $this->form_validation->set_rules('movie_name', 'Movie Name', 'required|min_length[3]|max_length[255]');
         $this->form_validation->set_rules('movie_genre', 'Movie Genre', 'required|min_length[3]|max_length[255]');
         $this->form_validation->set_rules('screen_number', 'Screen Number', 'required|integer');
-        $this->form_validation->set_rules('movie_time', 'Movie Time', 'required');
+        $this->form_validation->set_rules('selected_times', 'Movie Time', 'required');
         $this->form_validation->set_rules('seat_price', 'Seat Price', 'required|numeric');
         $this->form_validation->set_rules('movie_date', 'Movie Date', 'required|callback_valid_date|callback_tomorrow_date');
     
         if ($this->form_validation->run() == FALSE) {
             // If validation fails, reload the edit form with validation errors
-            $data['movie'] = (object) $this->input->post(); // Preserve form input
-            $this->load->view('editMovie', $data);
+            $data['active_tab'] = 'home';
+            $data['movie'] = $this->AdminModel->getMovieById($movie_id);
+            $data['selected_times'] = $this->AdminModel->getSelectedTimesByMovieId($movie_id);
+            $this->load->view('header', $data);
+            $this->load->view('admin/editMovie', $data);
         } else {
             // Form validation passed
             $screen_number = $this->input->post('screen_number');
             $movie_date = $this->input->post('movie_date');
+            $selected_times = $this->input->post('selected_times');
+
+            $selected_times_array = array_filter(array_map('trim', explode(',', $selected_times)));
     
             // Check if a movie is already scheduled on the same screen at the same time, excluding current movie
-            $movieExists = $this->AdminModel->checkMovieExistsExclude($movie_id, $screen_number, $this->input->post('movie_time'), $movie_date);
-            $selected_times = $this->input->post('movie_time');
+            $movieExists = $this->AdminModel->checkMovieExistsExclude($movie_id, $screen_number, $selected_times_array, $movie_date);
             if ($movieExists) {
                 // Movie already scheduled
                 $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
@@ -209,7 +214,7 @@ class AdminController extends CI_Controller {
                     'name' => $this->input->post('movie_name'),
                     'genre' => $this->input->post('movie_genre'),
                     'screen_number' => $screen_number,
-                    'time' => json_encode($selected_times),
+                    'time' => json_encode($selected_times_array),
                     'price' => $this->input->post('seat_price'),
                     'date' => $movie_date
                 ];

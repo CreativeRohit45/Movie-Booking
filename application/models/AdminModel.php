@@ -34,13 +34,22 @@ class AdminModel extends CI_Model {
         return FALSE;
     }
     
-
-    public function checkMovieExistsExclude($screen_number, $movie_time, $movie_date, $exclude_id) {
+    public function checkMovieExistsExclude($exclude_id, $screen_number, $movie_time, $movie_date) {
+        $this->db->select('*');
+        $this->db->from('movies');
         $this->db->where('screen_number', $screen_number);
-        $this->db->where('time', $movie_time);
         $this->db->where('date', $movie_date);
+    
+        // Convert $movie_time array to JSON format for comparison
+        $json_movie_time = json_encode($movie_time);
+    
+        // Use JSON_CONTAINS to check if any of the movie times exist in the database
+        $this->db->where("JSON_CONTAINS(time, " . $this->db->escape($json_movie_time) . ")");
+    
+        // Exclude the movie with specific ID
         $this->db->where('id !=', $exclude_id);
-        $query = $this->db->get('movies');
+        
+        $query = $this->db->get();
     
         if ($query->num_rows() > 0) {
             return true;

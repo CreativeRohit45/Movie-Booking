@@ -9,4 +9,13 @@ class UserController extends CI_Controller {
         $this->load->view('user/userDash',$data);
     }
 
+    public function viewMovie($movie_id){
+        $data['active_tab'] = 'home';
+        $movie = $this->MovieModel->getMovie($movie_id);
+        $data['movie'] = $movie;
+        $data['time_slots'] = json_decode($movie->time, true);
+        $this->load->view('user/header',$data);
+        $this->load->view('user/bookMovie',$data);
+    }
+
 }

@@ -17,22 +17,26 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-top: 100px;
+            margin-top: 80px;
             padding: 20px;
+            margin-left: 30px;
         }
 
         .now-showing {
             font-size: 24px;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 20px;
         }
 
         .movies-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 30px;
+            gap: 75px;
             width: 100%;
+        }
+
+        .movies-grid a{
+            height: 400px;
         }
 
         .movie-card {
@@ -48,19 +52,19 @@
 
         .movie-card img {
             width: 100%;
-            height: 70%;
+            height: 85%;
         }
 
         .movie-card h3 {
             margin: 0;
-            padding: 10px;
+            padding: 5px 20px;
             font-size: 18px;
             color: #333;
         }
 
         .movie-card p {
             margin: 0;
-            padding: 0 10px 10px;
+            padding: 0px 20px;
             font-size: 14px;
             color: #666;
         }
