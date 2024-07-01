@@ -73,7 +73,7 @@ class AdminController extends CI_Controller {
         $this->form_validation->set_rules('movie_name', 'Movie Name', 'required|min_length[3]|max_length[255]');
         $this->form_validation->set_rules('movie_genre', 'Movie Genre', 'required|min_length[3]|max_length[255]');
         $this->form_validation->set_rules('screen_number', 'Screen Number', 'required|integer');
-        $this->form_validation->set_rules('movie_time', 'Movie Time', 'required');
+        $this->form_validation->set_rules('selected_times', 'Movie Time', 'required');
         $this->form_validation->set_rules('seat_price', 'Seat Price', 'required|numeric');
         $this->form_validation->set_rules('movie_date', 'Movie Date', 'required|callback_valid_date|callback_tomorrow_date');
         $this->form_validation->set_rules('movie_photo', 'Movie Photo', 'callback_file_check');
@@ -85,9 +85,11 @@ class AdminController extends CI_Controller {
             // Form validation passed
             $screen_number = $this->input->post('screen_number');
             $movie_date = $this->input->post('movie_date');
+            $selected_times = $this->input->post('selected_times');
 
+            $selected_times_array = array_filter(array_map('trim', explode(',', $selected_times)));
             // Check if a movie is already scheduled on the same screen at the same time
-            $movieExists = $this->AdminModel->checkMovieExists($screen_number, $this->input->post('movie_time'), $movie_date);
+            $movieExists = $this->AdminModel->checkMovieExists($screen_number, $selected_times_array, $movie_date);
             if ($movieExists) {
                 // Movie already scheduled
                 $this->session->set_flashdata('error', 'A movie is already scheduled on this screen at the selected time.');
@@ -103,7 +105,7 @@ class AdminController extends CI_Controller {
                     'name' => $this->input->post('movie_name'),
                     'genre' => $this->input->post('movie_genre'),
                     'screen_number' => $screen_number,
-                    'time' => json_encode($this->input->post('movie_time')),
+                    'time' => json_encode($selected_times_array),
                     'price' => $this->input->post('seat_price'),
                     'total_seats' => 60,
                     'date' => $movie_date
@@ -230,12 +232,7 @@ class AdminController extends CI_Controller {
 
      // Custom callback function to check file upload
      public function file_check($str) {
-        if (empty($_FILES['movie_photo']['name'])) {
-            $this->form_validation->set_message('file_check', 'The {field} field is required');
-            return FALSE;
-        } else {
-            return TRUE;
-        }
+        return TRUE; // Example, adjust as needed
     }
 
     // Custom callback function to check if the date is valid

@@ -17,14 +17,23 @@ class AdminModel extends CI_Model {
         }
     }
 
-    public function checkMovieExists($screen_number, $movie_time, $movie_date) {
+    public function checkMovieExists($screen_number, $selected_times_array, $movie_date) {
         $this->db->where('screen_number', $screen_number);
-        $this->db->where('time', $movie_time);
         $this->db->where('date', $movie_date);
+        $this->db->group_start(); // Start group
+        foreach ($selected_times_array as $time) {
+            $this->db->or_where('JSON_CONTAINS(time, ' . $this->db->escape(json_encode($time)) . ')');
+        }
+        $this->db->group_end(); // End group
+    
         $query = $this->db->get('movies');
-        
-        return $query->num_rows() > 0;
+    
+        if ($query->num_rows() > 0) {
+            return TRUE;
+        }
+        return FALSE;
     }
+    
 
     public function checkMovieExistsExclude($screen_number, $movie_time, $movie_date, $exclude_id) {
         $this->db->where('screen_number', $screen_number);
