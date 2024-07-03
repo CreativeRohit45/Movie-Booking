@@ -115,31 +115,31 @@
 </head>
 <body>
   <div class="wrapper">
-    <form action="">
+    <form action="<?php echo base_url('userRegister')?>" method="post">
       <h1>Register</h1>
       <div class="input-group">
         <div class="input-box">
-          <input type="text" placeholder="Full Name" required>
+          <input type="text" placeholder="Full Name" name="full_name" required>
           <i class='bx bxs-user'></i>
         </div>
         <div class="input-box">
-          <input type="email" placeholder="Email" required>
+          <input type="email" placeholder="Email" name="email" required>
           <i class='bx bxs-envelope'></i>
         </div>
       </div>
       <div class="input-group">
         <div class="input-box">
-          <input type="password" placeholder="Password" required>
+          <input type="password" placeholder="Password" name="password" required>
           <i class='bx bxs-lock-alt'></i>
         </div>
         <div class="input-box">
-          <input type="password" placeholder="Confirm Password" required>
+          <input type="password" placeholder="Confirm Password" name="confirm_password" required>
           <i class='bx bxs-lock-alt'></i>
         </div>
       </div>
       <button type="submit" class="btn">Register Now</button>
       <div class="register-link">
-        <p>Already Registered? <a href="#">Login</a></p>
+        <p>Already Registered? <a href="<?php echo base_url('userLogin')?>">Login</a></p>
       </div>
     </form>
   </div>

@@ -285,11 +285,11 @@
       }
       .price {
         width: 100%;
-        box-sizing: border-box;
-        padding: 10px 20px;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        margin-top: 30px;
       }
       .total {
         display: flex;
@@ -349,69 +349,122 @@
               <div class="item">Selected</div>
             </div>
             <div class="all-seats">
-              <input type="checkbox" name="tickets" id="s1" />
-              <label for="s1" class="seat booked"></label>
-            </div>
-          </div>
-          <div class="timings">       
-          <div class="times">
                 <?php
-                foreach ($time_slots as $index => $time) {
-                    $checked = $index === 0 ? 'checked' : '';
-                    echo "<input type='radio' name='time' id='t$index' $checked />";
-                    echo "<label for='t$index' class='time'>$time</label>";
+                // Simulating 60 seats with random booking status
+                for ($i = 1; $i <= 60; $i++) {
+                    $statusClass = '';
+                    foreach ($booked_seats as $booked_seat) {
+                        if ($booked_seat->selected_seats == $i) {
+                            $statusClass = 'booked';
+                            break;
+                        }
+                    }
+                    echo '<input type="checkbox" id="s' . $i . '" class="seat-checkbox" data-price="' . htmlspecialchars($movie->price, ENT_QUOTES, 'UTF-8') . '" data-seat-number="' . $i . '" ' . ($statusClass ? 'disabled' : '') . '>';
+                    echo '<label for="s' . $i . '" class="seat ' . $statusClass . '"></label>';
                 }
                 ?>
+            </div>
+
+          </div>
+          <div class="timings">       
+            <div class="times">
+              <?php
+              // Simulating time slots
+              foreach ($time_slots as $index => $time) {
+                  $checked = $index === 0 ? 'checked' : '';
+                  echo "<input type='radio' name='time' id='t$index' value='$time' $checked />";
+                  echo "<label for='t$index' class='time'>$time</label>";
+              }
+              ?>
             </div>
           </div>
         </div>
         <div class="price">
           <div class="total">
-            <span> <span class="count">0</span> Tickets </span>
+            <span><span class="count">0</span> Tickets</span>
             <div class="amount">0</div>
           </div>
-          <button type="button">Book</button>
+          <button type="button" onclick="bookTickets()">Book</button>
         </div>
       </div>
     </div>
         </div>
 
+    // Function to handle seat selection and price calculation
     <script>
-      let seats = document.querySelector(".all-seats");
-      for (var i = 0; i < 59; i++) {
-        let randint = Math.floor(Math.random() * 2);
-        let booked = randint === 1 ? "booked" : "";
-        seats.insertAdjacentHTML(
-          "beforeend",
-          '<input type="checkbox" name="tickets" id="s' +
-            (i + 2) +
-            '" /><label for="s' +
-            (i + 2) +
-            '" class="seat ' +
-            booked +
-            '"></label>'
-        );
-      }
+     function bookTickets() {
+    let selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
+    let totalPrice = 0;
+    let totalSeats = selectedSeats.length;
+    let selectedSeatNumbers = [];
 
-      let tickets = seats.querySelectorAll("input");
-      tickets.forEach((ticket) => {
-        ticket.addEventListener("change", () => {
-          let amount = document.querySelector(".amount").innerHTML;
-          let count = document.querySelector(".count").innerHTML;
-          amount = Number(amount);
-          count = Number(count);
+    selectedSeats.forEach(seat => {
+      totalPrice += parseInt(seat.getAttribute('data-price'));
+      selectedSeatNumbers.push(seat.getAttribute('data-seat-number'));
+    });
 
-          if (ticket.checked) {
-            count += 1;
-            amount += 200;
-          } else {
-            count -= 1;
-            amount -= 200;
-          }
-          document.querySelector(".amount").innerHTML = amount;
-          document.querySelector(".count").innerHTML = count;
-        });
+    // Update total amount and count display
+    document.querySelector('.amount').textContent = totalPrice;
+    document.querySelector('.count').textContent = totalSeats;
+
+    // Prepare data to send via AJAX
+    let movie_id = '<?php echo $movie->movie_id; ?>';
+    let movie_name = '<?php echo $movie->name; ?>';
+    let time_slot = document.querySelector('input[name="time"]:checked').value;
+    let screen_number = '<?php echo $movie->screen_number; ?>';
+
+    let data = {
+      movie_id: movie_id,
+      movie_name: movie_name,
+      total_seats: totalSeats,
+      time_slot: time_slot,
+      price: totalPrice,
+      screen_number: screen_number,
+      selected_seats: selectedSeatNumbers
+    };
+
+    // Send data via AJAX to your controller
+    fetch('<?= base_url('bookTickets'); ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Handle response from server if needed
+      console.log('Booking successful:', data);
+      alert('Booking successful!');
+      // Optionally, redirect to another page or show a success message
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Booking failed. Please try again.');
+    });
+  }
+
+  // Add event listener to each seat checkbox to update total dynamically
+  let seatCheckboxes = document.querySelectorAll('.seat-checkbox');
+  seatCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      let selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
+      let totalPrice = 0;
+      let totalSeats = selectedSeats.length;
+      let selectedSeatNumbers = [];
+
+      selectedSeats.forEach(seat => {
+        totalPrice += parseInt(seat.getAttribute('data-price'));
+        selectedSeatNumbers.push(seat.getAttribute('data-seat-number'));
       });
+
+      // Update total amount and count display
+      document.querySelector('.amount').textContent = totalPrice;
+      document.querySelector('.count').textContent = totalSeats;
+    });
+  });
+
+
     </script>
 </body>
 </html>

@@ -75,10 +75,31 @@
     </style>
 </head>
 <body>
-    <div class="movies-container">
-        <div class="now-showing">Now Showing</div>
+<div class="movies-container">
+    <div class="now-showing">Now Showing</div>
+    
+    <?php 
+    // Define today's and tomorrow's dates
+    $today = date('Y-m-d');
+    $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+    // Separate movies into today's and tomorrow's shows
+    $todays_movies = [];
+    $tomorrows_movies = [];
+
+    foreach ($movies as $movie) {
+        if ($movie->date == $today) {
+            $todays_movies[] = $movie;
+        } elseif ($movie->date == $tomorrow) {
+            $tomorrows_movies[] = $movie;
+        }
+    }
+    ?>
+
+    <div class="movies-section">
+        <h2>Today's Show</h2>
         <div class="movies-grid">
-            <?php foreach ($movies as $movie): ?>
+            <?php foreach ($todays_movies as $movie): ?>
                 <a href="<?php echo base_url('viewMovie/' . $movie->id); ?>" class="movie-card">
                     <img src="data:image/jpeg;base64,<?php echo base64_encode($movie->photo); ?>" alt="Movie Photo">
                     <h3><?php echo $movie->name; ?></h3>
@@ -87,5 +108,20 @@
             <?php endforeach; ?>
         </div>
     </div>
+
+    <div class="movies-section">
+        <h2>Tomorrow's Show</h2>
+        <div class="movies-grid">
+            <?php foreach ($tomorrows_movies as $movie): ?>
+                <a href="<?php echo base_url('viewMovie/' . $movie->id); ?>" class="movie-card">
+                    <img src="data:image/jpeg;base64,<?php echo base64_encode($movie->photo); ?>" alt="Movie Photo">
+                    <h3><?php echo $movie->name; ?></h3>
+                    <p><?php echo $movie->genre; ?></p>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

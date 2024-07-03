@@ -114,14 +114,14 @@
 </head>
 <body>
   <div class="wrapper">
-    <form action="">
+    <form action="<?php echo base_url('userLogin')?>" method="post">
       <h1>Login</h1>
       <div class="input-box">
-        <input type="text" placeholder="Username" required>
+        <input type="text" placeholder="Email" name="email" required>
         <i class='bx bxs-user'></i>
       </div>
       <div class="input-box">
-        <input type="password" placeholder="Password" required>
+        <input type="password" placeholder="Password" name="password" required>
         <i class='bx bxs-lock-alt' ></i>
       </div>
       <div class="remember-forgot">
@@ -130,7 +130,7 @@
       </div>
       <button type="submit" class="btn">Login</button>
       <div class="register-link">
-        <p>Dont have an account? <a href="#">Register</a></p>
+        <p>Dont have an account? <a href="<?php echo base_url('userRegister')?>">Register</a></p>
       </div>
     </form>
   </div>
