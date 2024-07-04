@@ -45,13 +45,16 @@ class MovieModel extends CI_Model {
         return $this->db->insert('bookings', $data);
     }
 
-    public function getBookedSeats($movie_id) {
-        $this->db->select('*');
+    public function getBookedSeats($movie_id, $time_slot) {
+        $time_slot = urldecode($time_slot);
+        $this->db->select('selected_seats');
         $this->db->from('bookings');
         $this->db->where('movie_id', $movie_id);
+        $this->db->where('time_slot', $time_slot);
         $query = $this->db->get();
         return $query->result();
     }
+    
     
     
 }

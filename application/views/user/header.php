@@ -6,11 +6,20 @@
     <title>User Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
             font-family: 'Roboto', sans-serif;
+            font-weight: 600;
             background: linear-gradient(135deg, #3498db, #8e44ad);
             color: #333;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
         }
 
         .navbar {
@@ -18,12 +27,13 @@
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            padding: 20px 20px;
+            padding: 15px 20px;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
+            height: 70px; /* Set a fixed height for the navbar */
         }
 
         .navbar .nav-list {
@@ -32,6 +42,7 @@
             padding: 0;
             display: flex;
             align-items: center;
+            height: 100%; /* Ensure the list takes up the full height of the navbar */
         }
 
         .navbar .nav-list li {
@@ -45,8 +56,9 @@
             padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
-            font-weight: 500;
+            font-weight: 600;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            line-height: 40px; /* Adjust the line height to match the padding */
         }
 
         .navbar .nav-list a:hover {
@@ -63,19 +75,19 @@
             display: flex;
             align-items: center;
             cursor: pointer;
+            line-height: 40px; /* Adjust the line height to match the padding */
         }
 
         .user-menu .dropdown {
             display: none;
             position: absolute;
-            top: 45px; /* Adjusted for better alignment */
+            top: 55px; /* Adjusted for better alignment */
             right: 0;
-            background: linear-gradient(135deg, #3498db, #8e44ad);
+            background: #34495e;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             list-style: none;
-            padding: 0;
             margin: 0;
             z-index: 1000;
             min-width: 140px;
@@ -87,7 +99,6 @@
         }
 
         .dropdown li {
-            padding: 10px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -98,9 +109,9 @@
         .dropdown li a {
             text-decoration: none;
             color: white;
-            display: block;
-            width: 100%;
             font-weight: 500;
+            padding: 10px 20px; /* Added padding for better spacing */
+            display: block;
         }
 
         .dropdown li a:hover {
@@ -108,10 +119,6 @@
             color: white;
         }
 
-        .content {
-            margin-top: 100px;
-            padding: 20px;
-        }
     </style>
 </head>
 <body>

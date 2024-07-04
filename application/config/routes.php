@@ -73,3 +73,5 @@ $route['userLogin'] = $route['UserController'].'/loginUser';
 $route['userLogout'] = $route['UserController'].'/userLogout';
 $route['viewMovie/(:num)'] = $route['UserController'].'/viewMovie/$1';
 $route['bookTickets'] = $route['UserController'].'/bookTickets';
+$route['getBookedSeats/(:any)/(:any)'] = $route['UserController'].'/getBookedSeats/$1/$2';
+

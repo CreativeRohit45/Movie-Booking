@@ -286,10 +286,9 @@
       .price {
         width: 100%;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        margin-top: 30px;
+        justify-content: space-evenly;
+        margin-top: 10px;
       }
       .total {
         display: flex;
@@ -318,153 +317,193 @@
 </head>
 <body>
     <div class="container">
+        <!-- Left side content -->
         <div class="left-side">
-        <img src="data:image/jpeg;base64,<?php echo base64_encode($movie->photo); ?>" alt="Movie Photo">
-        <div class="movie-details">
+            <img src="data:image/jpeg;base64,<?php echo base64_encode($movie->photo); ?>" alt="Movie Photo">
+            <div class="movie-details">
                 <dl>
                     <dt>Movie Name: <?php echo htmlspecialchars($movie->name, ENT_QUOTES, 'UTF-8'); ?></dt>
-
                     <dt>Genre: <?php echo htmlspecialchars($movie->genre, ENT_QUOTES, 'UTF-8'); ?></dt>
-
                     <dt>Screen Number: <?php echo htmlspecialchars($movie->screen_number, ENT_QUOTES, 'UTF-8'); ?></dt>
-
                     <dt>Price per Seat: <?php echo htmlspecialchars($movie->price, ENT_QUOTES, 'UTF-8'); ?> Rs</dt>
-
-                    <dt>Date: <?php echo htmlspecialchars($movie->date, ENT_QUOTES, 'UTF-8'); ?></dt>  
+                    <dt>Date: <?php echo htmlspecialchars($movie->date, ENT_QUOTES, 'UTF-8'); ?></dt>
                 </dl>
             </div>
         </div>
+
+        <!-- Right side content -->
         <div class="right-side">
-            
+            <div class="tickets">
+                <div class="ticket-selector">
+                    <div class="head">
+                        <div class="title"><?php echo htmlspecialchars($movie->name, ENT_QUOTES, 'UTF-8'); ?></div>
+                    </div>
+                    <div class="seats">
+                        <div class="status">
+                            <div class="item">Available</div>
+                            <div class="item">Booked</div>
+                            <div class="item">Selected</div>
+                        </div>
+                        <div class="all-seats" id="seat-container">
+                        <?php
+                          // Simulating 60 seats with random booking status
+                          for ($i = 1; $i <= 60; $i++) {
+                              $statusClass = '';
+                              foreach ($booked_seats as $booked_seat) {
+                                  $selected_seats = json_decode($booked_seat->selected_seats, true);
+                                  if (in_array($i, $selected_seats)) {
+                                      $statusClass = 'booked';
+                                      break;
+                                  }
+                              }
+                              echo '<input type="checkbox" id="s' . $i . '" class="seat-checkbox" data-price="' . htmlspecialchars($movie->price, ENT_QUOTES, 'UTF-8') . '" data-seat-number="' . $i . '" ' . ($statusClass ? 'disabled' : '') . '>';
+                              echo '<label for="s' . $i . '" class="seat ' . $statusClass . '"></label>';
+                          }
+                          ?>
+                        </div>
+                    </div>
+                    <div class="timings">
+                      <div class="times">
+                          <?php
+                          foreach ($time_slots as $index => $time) {
+                              $checked = $index === 0 ? 'checked' : '';
+                              echo "<input type='radio' name='time' id='t$index' value='$time' $checked />";
+                              echo "<label for='t$index' class='time' onclick='updateSeats(\"$time\")'>$time</label>";
+                          }
+                          ?>
+                      </div>
+                  </div>
 
-      <div class="tickets">
-        <div class="ticket-selector">
-          <div class="head">
-            <div class="title"> <?php echo htmlspecialchars($movie->name, ENT_QUOTES, 'UTF-8'); ?></div>
-          </div>
-          <div class="seats">
-            <div class="status">
-              <div class="item">Available</div>
-              <div class="item">Booked</div>
-              <div class="item">Selected</div>
+                </div>
+                <div class="price">
+                    <div class="total">
+                        <span><span class="count">0</span> Tickets</span>
+                        <div class="amount">0</div>
+                    </div>
+                    <button type="button" onclick="bookTickets()">Book</button>
+                </div>
             </div>
-            <div class="all-seats">
-                <?php
-                // Simulating 60 seats with random booking status
-                for ($i = 1; $i <= 60; $i++) {
-                    $statusClass = '';
-                    foreach ($booked_seats as $booked_seat) {
-                        if ($booked_seat->selected_seats == $i) {
-                            $statusClass = 'booked';
-                            break;
-                        }
-                    }
-                    echo '<input type="checkbox" id="s' . $i . '" class="seat-checkbox" data-price="' . htmlspecialchars($movie->price, ENT_QUOTES, 'UTF-8') . '" data-seat-number="' . $i . '" ' . ($statusClass ? 'disabled' : '') . '>';
-                    echo '<label for="s' . $i . '" class="seat ' . $statusClass . '"></label>';
-                }
-                ?>
-            </div>
-
-          </div>
-          <div class="timings">       
-            <div class="times">
-              <?php
-              // Simulating time slots
-              foreach ($time_slots as $index => $time) {
-                  $checked = $index === 0 ? 'checked' : '';
-                  echo "<input type='radio' name='time' id='t$index' value='$time' $checked />";
-                  echo "<label for='t$index' class='time'>$time</label>";
-              }
-              ?>
-            </div>
-          </div>
         </div>
-        <div class="price">
-          <div class="total">
-            <span><span class="count">0</span> Tickets</span>
-            <div class="amount">0</div>
-          </div>
-          <button type="button" onclick="bookTickets()">Book</button>
-        </div>
-      </div>
     </div>
-        </div>
 
-    // Function to handle seat selection and price calculation
     <script>
-     function bookTickets() {
-    let selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
-    let totalPrice = 0;
-    let totalSeats = selectedSeats.length;
-    let selectedSeatNumbers = [];
+    function updateSeats(time_slot) {
+        // Fetch booked seats for the selected time slot
+        fetch(`<?= base_url('getBookedSeats'); ?>/${'<?php echo $movie->movie_id; ?>'}/${encodeURIComponent(time_slot)}`)
+            .then(response => response.json())
+            .then(data => {
+                const bookedSeats = data.booked_seats;
+                const seatContainer = document.getElementById('seat-container');
+                seatContainer.innerHTML = ''; // Clear existing seats
 
-    selectedSeats.forEach(seat => {
-      totalPrice += parseInt(seat.getAttribute('data-price'));
-      selectedSeatNumbers.push(seat.getAttribute('data-seat-number'));
+                for (let i = 1; i <= 60; i++) {
+                    let statusClass = '';
+                    bookedSeats.forEach(booked_seat => {
+                        const selected_seats = JSON.parse(booked_seat.selected_seats);
+                        if (selected_seats.includes(i.toString())) { // Ensure comparison with string
+                            statusClass = 'booked';
+                        }
+                    });
+
+                    seatContainer.innerHTML += `
+                        <input type="checkbox" id="s${i}" class="seat-checkbox" data-price="${'<?php echo htmlspecialchars($movie->price, ENT_QUOTES, 'UTF-8'); ?>'}" data-seat-number="${i}" ${statusClass ? 'disabled' : ''}>
+                        <label for="s${i}" class="seat ${statusClass}"></label>
+                    `;
+                }
+
+                attachSeatEventListeners(); // Attach event listeners to the new checkboxes
+                updateTotalPrice(); // Update total price after updating seats
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function attachSeatEventListeners() {
+        const seatCheckboxes = document.querySelectorAll('.seat-checkbox');
+        seatCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateTotalPrice);
+        });
+    }
+
+    function updateTotalPrice() {
+        const selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
+        const totalPriceElement = document.querySelector('.amount');
+        const ticketCountElement = document.querySelector('.count');
+
+        let total = 0;
+        selectedSeats.forEach(seat => {
+            total += parseFloat(seat.getAttribute('data-price'));
+        });
+
+        totalPriceElement.textContent = total.toFixed(2) + ' Rs'; // Ensure two decimal places
+        ticketCountElement.textContent = selectedSeats.length;
+    }
+
+    function bookTickets() {
+
+        let isLoggedIn = <?php echo $this->session->userdata('customer_id') ? 'true' : 'false'; ?>;
+    
+        if (!isLoggedIn) {
+            // Redirect to login page
+            window.location.href = '<?= base_url('userLogin'); ?>';
+            return;
+        }
+
+        let selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
+        let totalPrice = 0;
+        let totalSeats = selectedSeats.length;
+        let selectedSeatNumbers = [];
+
+        selectedSeats.forEach(seat => {
+            totalPrice += parseInt(seat.getAttribute('data-price'));
+            selectedSeatNumbers.push(seat.getAttribute('data-seat-number'));
+        });
+
+        // Update total amount and count display
+        document.querySelector('.amount').textContent = totalPrice.toFixed(2) + ' Rs'; // Ensure two decimal places
+        document.querySelector('.count').textContent = totalSeats;
+
+        // Prepare data to send via AJAX
+        let movie_id = '<?php echo $movie->movie_id; ?>';
+        let movie_name = '<?php echo $movie->name; ?>';
+        let time_slot = document.querySelector('input[name="time"]:checked').value;
+        let screen_number = '<?php echo $movie->screen_number; ?>';
+
+        let data = {
+            movie_id: movie_id,
+            movie_name: movie_name,
+            total_seats: totalSeats,
+            time_slot: time_slot,
+            price: totalPrice,
+            screen_number: screen_number,
+            selected_seats: selectedSeatNumbers
+        };
+
+        // Send data via AJAX to your controller
+        fetch('<?= base_url('bookTickets'); ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response from server if needed
+            console.log('Booking successful:', data);
+            alert('Booking successful!');
+            // Optionally, redirect to another page or show a success message
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Booking failed. Please try again.');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstTimeSlot = '<?php echo $time_slots[0]; ?>';
+        updateSeats(firstTimeSlot);
     });
+</script>
 
-    // Update total amount and count display
-    document.querySelector('.amount').textContent = totalPrice;
-    document.querySelector('.count').textContent = totalSeats;
-
-    // Prepare data to send via AJAX
-    let movie_id = '<?php echo $movie->movie_id; ?>';
-    let movie_name = '<?php echo $movie->name; ?>';
-    let time_slot = document.querySelector('input[name="time"]:checked').value;
-    let screen_number = '<?php echo $movie->screen_number; ?>';
-
-    let data = {
-      movie_id: movie_id,
-      movie_name: movie_name,
-      total_seats: totalSeats,
-      time_slot: time_slot,
-      price: totalPrice,
-      screen_number: screen_number,
-      selected_seats: selectedSeatNumbers
-    };
-
-    // Send data via AJAX to your controller
-    fetch('<?= base_url('bookTickets'); ?>', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Handle response from server if needed
-      console.log('Booking successful:', data);
-      alert('Booking successful!');
-      // Optionally, redirect to another page or show a success message
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Booking failed. Please try again.');
-    });
-  }
-
-  // Add event listener to each seat checkbox to update total dynamically
-  let seatCheckboxes = document.querySelectorAll('.seat-checkbox');
-  seatCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      let selectedSeats = document.querySelectorAll('.seat-checkbox:checked');
-      let totalPrice = 0;
-      let totalSeats = selectedSeats.length;
-      let selectedSeatNumbers = [];
-
-      selectedSeats.forEach(seat => {
-        totalPrice += parseInt(seat.getAttribute('data-price'));
-        selectedSeatNumbers.push(seat.getAttribute('data-seat-number'));
-      });
-
-      // Update total amount and count display
-      document.querySelector('.amount').textContent = totalPrice;
-      document.querySelector('.count').textContent = totalSeats;
-    });
-  });
-
-
-    </script>
 </body>
 </html>

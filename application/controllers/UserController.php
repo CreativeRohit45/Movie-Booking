@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+require_once(APPPATH.'libraries/tcpdf/tcpdf.php');
 class UserController extends CI_Controller {
     public function index() {
         $data['movies'] = $this->MovieModel->getAllMovies();
@@ -9,19 +10,27 @@ class UserController extends CI_Controller {
         $this->load->view('user/userDash',$data);
     }
 
-    public function viewMovie($movie_id) {
+    public function viewMovie($movie_id){
         $data['active_tab'] = 'home';
         $movie = $this->MovieModel->getMovie($movie_id);
         $data['movie'] = $movie;
         $data['time_slots'] = json_decode($movie->time, true);
-    
-        // Fetch booked seats for the movie
-        $booked_seats = $this->MovieModel->getBookedSeats($movie->movie_id);
-        $data['booked_seats'] = $booked_seats;
-    
+        
+        // Get the booked seats for the first time slot as default
+        $time_slot = $data['time_slots'][0];
+        $data['booked_seats'] = $this->MovieModel->getBookedSeats($movie_id, $time_slot);
+        
         $this->load->view('user/header', $data);
         $this->load->view('user/bookMovie', $data);
     }
+    
+    public function getBookedSeats($movie_id, $time_slot){
+        $time_slot = urldecode($time_slot);  // Decode URL-encoded time slot
+        $booked_seats = $this->MovieModel->getBookedSeats($movie_id, $time_slot);
+            
+        echo json_encode(['booked_seats' => $booked_seats]);
+    }
+    
     
 
     public function registerUser(){
@@ -99,6 +108,7 @@ class UserController extends CI_Controller {
                 // Password is correct, set session data
                 $this->session->set_userdata('user_id', $user->id);
                 $this->session->set_userdata('customer_id', $user->customer_id);
+                $this->session->set_userdata('email', $user->email);
                 $this->session->set_userdata('full_name', $user->full_name);
                 $this->session->set_flashdata('success', 'Login successful.');
                 redirect('userHome'); // Change this to your desired redirection
@@ -143,17 +153,63 @@ class UserController extends CI_Controller {
     
         // Prepare response based on insertion result
         if ($inserted) {
-            // Successfully booked
-            $response = array('success' => true, 'message' => 'Booking successful');
+            // Generate PDF
+            $pdf_content = $this->generateBookingPDF($booking_data);
+
+            // Configure email settings
+            $this->email->from('rohitindi98@gmail.com', 'MyBookings');
+            $this->email->to($this->session->userdata('email')); // Customer's email
+            $this->email->subject('Booking Confirmation');
+            $this->email->message('Thank you for your booking. Please find the attached PDF with your booking details.');
+
+            // Attach PDF
+            $this->email->attach($pdf_content, 'attachment', 'booking_confirmation.pdf', 'application/pdf');
+
+            // Send email
+            if ($this->email->send()) {
+                $response = array('success' => true, 'message' => 'Booking successful and email sent');
+            } else {
+                $response = array('success' => true, 'message' => 'Booking successful but failed to send email');
+            }
         } else {
             // Failed to book
             $response = array('success' => false, 'message' => 'Failed to book');
         }
-    
+
         // Send JSON response back to the client
         header('Content-Type: application/json');
         echo json_encode($response);
     }
+
+    private function generateBookingPDF($booking_data) {
+        // Create new PDF document
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+        
+        // Set document information
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('Your Company');
+        $pdf->SetTitle('Booking Confirmation');
+        $pdf->SetSubject('Booking Details');
+        
+        // Add a page
+        $pdf->AddPage();
+        
+        // Set some content to print
+        $html = '<h1 style="text-align: center; font-size: 24px;">Booking Receipt</h1>';
+        $html .= '<hr>';
+        $html .= '<p style="font-size: 14px;"><strong>Date:</strong> ' . date('Y-m-d H:i:s') . '</p>';
+        $html .= '<p style="font-size: 14px;"><strong>Movie Name:</strong> ' . $booking_data['movie_name'] . '</p>';
+        $html .= '<p style="font-size: 14px;"><strong>Screen Number:</strong> ' . $booking_data['screen_number'] . '</p>';
+        $html .= '<p style="font-size: 14px;"><strong>Slot:</strong> ' . $booking_data['time_slot'] . '</p>';
+        $html .= '<p style="font-size: 14px;"><strong>Price Paid:</strong> ' . $booking_data['price'] . ' Rs</p>';
+        
+        // Print text using writeHTMLCell()
+        $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+        
+        // Output the PDF as a string
+        return $pdf->Output('booking_confirmation.pdf', 'S');
+    }
+    
     
 
     public function userLogout() {
