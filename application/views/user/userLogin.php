@@ -134,5 +134,31 @@
       </div>
     </form>
   </div>
+
+      <?php if($this->session->flashdata('fail')){?>		
+        <Script>
+          Swal.fire({
+            title: 'Sorry',
+            text: 'Invalid email or password!!',
+            type: 'error',
+            timer: 3000,
+                      icon: 'warning',
+            showConfirmButton: false
+          });
+        </Script>
+			<?php }?>
+
+      <?php if($this->session->flashdata('success')){?>		
+        <Script>
+          Swal.fire({
+            title: 'Congrats',
+            text: 'Registration successful. You can now login !!',
+            type: 'success',
+            timer: 3000,
+                      icon: 'warning',
+            showConfirmButton: false
+          });
+        </Script>
+			<?php }?>
 </body>
 </html>

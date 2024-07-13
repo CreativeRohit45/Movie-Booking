@@ -27,12 +27,10 @@ class UserController extends CI_Controller {
     public function getBookedSeats($movie_id, $time_slot){
         $time_slot = urldecode($time_slot);  // Decode URL-encoded time slot
         $booked_seats = $this->MovieModel->getBookedSeats($movie_id, $time_slot);
-            
+      
         echo json_encode(['booked_seats' => $booked_seats]);
     }
     
-    
-
     public function registerUser(){
         $this->form_validation->set_rules('full_name', 'Full Name', 'required');
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[users.email]');
@@ -110,11 +108,11 @@ class UserController extends CI_Controller {
                 $this->session->set_userdata('customer_id', $user->customer_id);
                 $this->session->set_userdata('email', $user->email);
                 $this->session->set_userdata('full_name', $user->full_name);
-                $this->session->set_flashdata('success', 'Login successful.');
+                $this->session->set_flashdata('reg-success', 'Login successful.');
                 redirect('userHome'); // Change this to your desired redirection
             } else {
                 // Invalid credentials
-                $this->session->set_flashdata('error', 'Invalid email or password.');
+                $this->session->set_flashdata('fail', 'Invalid email or password.');
                 redirect('userLogin');
             }
         }
@@ -136,50 +134,59 @@ class UserController extends CI_Controller {
         // Example: Retrieve customer_id from session (replace with your actual session handling)
         $customer_id = $this->session->userdata('customer_id');
     
-        // Prepare data to insert into the database
-        $booking_data = array(
-            'movie_id' => $movie_id,
-            'customer_id' => $customer_id,
-            'total_seats' => $total_seats,
-            'time_slot' => $time_slot,
-            'price' => $price,
-            'screen_number' => $screen_number,
-            'movie_name' => $movie_name,
-            'selected_seats' => json_encode($selected_seats)
-        );
+        // Check if the selected seats are already booked
+        $alreadyBooked = $this->MovieModel->checkSeatsAvailability($movie_id, $time_slot, $screen_number, $selected_seats);
     
-        // Insert into the database using your Model (adjust this based on your actual Model method)
-        $inserted = $this->MovieModel->insertData($booking_data);
-    
-        // Prepare response based on insertion result
-        if ($inserted) {
-            // Generate PDF
-            $pdf_content = $this->generateBookingPDF($booking_data);
-
-            // Configure email settings
-            $this->email->from('rohitindi98@gmail.com', 'MyBookings');
-            $this->email->to($this->session->userdata('email')); // Customer's email
-            $this->email->subject('Booking Confirmation');
-            $this->email->message('Thank you for your booking. Please find the attached PDF with your booking details.');
-
-            // Attach PDF
-            $this->email->attach($pdf_content, 'attachment', 'booking_confirmation.pdf', 'application/pdf');
-
-            // Send email
-            if ($this->email->send()) {
-                $response = array('success' => true, 'message' => 'Booking successful and email sent');
-            } else {
-                $response = array('success' => true, 'message' => 'Booking successful but failed to send email');
-            }
+        if ($alreadyBooked) {
+            // Some or all seats are already booked
+            $response = array('success' => false, 'message' => 'Some or all of the selected seats are already booked. Please select different seats.');
         } else {
-            // Failed to book
-            $response = array('success' => false, 'message' => 'Failed to book');
+            // Prepare data to insert into the database
+            $booking_data = array(
+                'movie_id' => $movie_id,
+                'customer_id' => $customer_id,
+                'total_seats' => $total_seats,
+                'time_slot' => $time_slot,
+                'price' => $price,
+                'screen_number' => $screen_number,
+                'movie_name' => $movie_name,
+                'selected_seats' => json_encode($selected_seats)
+            );
+    
+            // Insert into the database using your Model (adjust this based on your actual Model method)
+            $inserted = $this->MovieModel->insertData($booking_data);
+    
+            // Prepare response based on insertion result
+            if ($inserted) {
+                // Generate PDF
+                $pdf_content = $this->generateBookingPDF($booking_data);
+    
+                // Configure email settings
+                $this->email->from('rohitindi98@gmail.com', 'MyBookings');
+                $this->email->to($this->session->userdata('email')); // Customer's email
+                $this->email->subject('Booking Confirmation');
+                $this->email->message('Thank you for your booking. Please find the attached PDF with your booking details.');
+    
+                // Attach PDF
+                $this->email->attach($pdf_content, 'attachment', 'booking_confirmation.pdf', 'application/pdf');
+    
+                // Send email
+                if ($this->email->send()) {
+                    $response = array('success' => true, 'message' => 'Booking successful and email sent');
+                } else {
+                    $response = array('success' => true, 'message' => 'Booking successful but failed to send email');
+                }
+            } else {
+                // Failed to book
+                $response = array('success' => false, 'message' => 'Failed to book');
+            }
         }
-
+    
         // Send JSON response back to the client
         header('Content-Type: application/json');
         echo json_encode($response);
     }
+    
 
     private function generateBookingPDF($booking_data) {
         // Create new PDF document
@@ -202,6 +209,7 @@ class UserController extends CI_Controller {
         $html .= '<p style="font-size: 14px;"><strong>Screen Number:</strong> ' . $booking_data['screen_number'] . '</p>';
         $html .= '<p style="font-size: 14px;"><strong>Slot:</strong> ' . $booking_data['time_slot'] . '</p>';
         $html .= '<p style="font-size: 14px;"><strong>Price Paid:</strong> ' . $booking_data['price'] . ' Rs</p>';
+        $html .= '<p style="font-size: 14px;"><strong>Selected Seats:</strong> ' . implode(', ', json_decode($booking_data['selected_seats'])) . '</p>';
         
         // Print text using writeHTMLCell()
         $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
@@ -209,8 +217,6 @@ class UserController extends CI_Controller {
         // Output the PDF as a string
         return $pdf->Output('booking_confirmation.pdf', 'S');
     }
-    
-    
 
     public function userLogout() {
         // Destroy the session

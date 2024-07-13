@@ -61,7 +61,7 @@ $route['addMovie'] = $route['AdminController'].'/addMovie';
 $route['admin/deleteMovie/(:num)'] = $route['AdminController'].'/deleteMovie/$1'; // Edit movie form
 $route['admin/editMovie/(:num)'] = $route['AdminController'].'/editMovie/$1'; // Edit movie form
 $route['admin/updateMovie/(:num)'] = $route['AdminController'].'/updateMovie/$1'; // Update movie action
-$route['viewBookings'] = $route['AdminController'].'/viewBookings';
+$route['viewBookings'] = $route['AdminController'].'/viewBooking';
 
 
 $route['adminlogout'] = $route['AdminController'].'/logout';

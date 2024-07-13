@@ -69,6 +69,24 @@ class AdminModel extends CI_Model {
         return $query->result();
     }
 
+    public function getAllBookings() {
+        $query = $this->db->get('bookings');
+        return $query->result();
+    }
+
+    public function getCustomerName($customer_id) {
+        $this->db->select('full_name'); // Assuming the name column in users table is 'name'
+        $this->db->from('users');
+        $this->db->where('customer_id', $customer_id); // Assuming the primary key of users table is 'id'
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            return $query->row()->full_name;
+        } else {
+            return null;
+        }
+    }
+
     public function deleteMovie($movie_id) {
         // Perform deletion based on movie ID
         $this->db->where('id', $movie_id);

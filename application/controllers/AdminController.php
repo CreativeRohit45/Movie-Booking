@@ -233,6 +233,24 @@ class AdminController extends CI_Controller {
         }
     }
 
+    public function viewBooking(){
+
+        if ($this->session->userdata('admin_logged_in')) {
+			// Get the selected order from the form data or from session if not available
+            $data['active_tab'] = 'view_bookings';
+            $data['bookings'] = $this->AdminModel->getAllBookings();
+            foreach ($data['bookings'] as &$booking) {
+                $booking->customer_name = $this->AdminModel->getCustomerName($booking->customer_id);
+            }
+			// Load the view and pass the data
+			$this->load->view('header',$data);
+			$this->load->view('admin/viewBooking',$data);
+		} else {
+			// Admin session not found, load the login view
+			$this->load->view('admin/adminLogin');
+		}
+
+    }
 
 
      // Custom callback function to check file upload

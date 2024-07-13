@@ -143,5 +143,17 @@
       </div>
     </form>
   </div>
+  <?php if($this->session->flashdata('error')){?>		
+        <Script>
+          Swal.fire({
+            title: 'Sorry',
+            text: 'Registration failed. Please try again!!',
+            type: 'error',
+            timer: 3000,
+                      icon: 'warning',
+            showConfirmButton: false
+          });
+        </Script>
+			<?php }?>
 </body>
 </html>

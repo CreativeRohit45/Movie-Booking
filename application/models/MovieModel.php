@@ -54,6 +54,27 @@ class MovieModel extends CI_Model {
         $query = $this->db->get();
         return $query->result();
     }
+
+    public function checkSeatsAvailability($movie_id, $time_slot, $screen_number, $selected_seats) {
+        $this->db->select('selected_seats');
+        $this->db->from('bookings');
+        $this->db->where('movie_id', $movie_id);
+        $this->db->where('time_slot', $time_slot);
+        $this->db->where('screen_number', $screen_number);
+        $query = $this->db->get();
+    
+        foreach ($query->result() as $row) {
+            $booked_seats = json_decode($row->selected_seats, true);
+            foreach ($selected_seats as $seat) {
+                if (in_array($seat, $booked_seats)) {
+                    return true; // Seat is already booked
+                }
+            }
+        }
+    
+        return false; // All selected seats are available
+    }
+    
     
     
     

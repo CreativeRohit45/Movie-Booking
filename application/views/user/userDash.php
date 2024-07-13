@@ -123,5 +123,23 @@
     </div>
 </div>
 
+<?php if ($this->session->flashdata('reg-success')) { ?>
+        <script>
+            Swal.fire({
+                title: 'Successfully Logged!',
+                text: 'Welcome Back',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: true,
+                confirmButtonText: 'Skip',
+                confirmButtonColor: '#007BFF'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '<?php echo base_url(''); ?>';
+                }
+            });
+        </script>
+    <?php } ?>
+
 </body>
 </html>

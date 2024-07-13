@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Running Shows</title>
+    <title>Admin - Booked Tickets</title>
     <style>
 
         .container {
@@ -81,7 +81,7 @@
 </head>
 <body>
 <div class="container">
-        <h1>Running Shows</h1>
+        <h1>Booked Tickets</h1>
         <table>
             <thead>
                 <tr>
@@ -90,23 +90,23 @@
                     <th>Date</th>
                     <th>Show Time</th>
                     <th>Screen</th>
-                    <th>Price</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
+                    <th>Price Paid</th>
+                    <th>Seats Selected</th>
+                    <th>Customer Name</th>
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($movies)): ?>
-                    <?php foreach ($movies as $index => $movie): ?>
+                <?php if (!empty($bookings)): ?>
+                    <?php foreach ($bookings as $index => $book): ?>
                         <tr>
                             <td><?php echo $index + 1; ?></td>
-                            <td><?php echo $movie->name; ?></td>
-                            <td><?php echo $movie->date; ?></td>
-                            <td><?php echo $movie->time; ?></td>
-                            <td><?php echo $movie->screen_number; ?></td>
-                            <td><?php echo $movie->price; ?></td>
-                            <td><a href="<?php echo base_url('admin/editMovie/' . $movie->id); ?>" class="btn btn-primary">Edit</a></td>
-                            <td><a href="<?php echo base_url('admin/deleteMovie/' . $movie->id); ?>" class="btn btn-secondary">Delete</a></td>
+                            <td><?php echo $book->movie_name; ?></td>
+                            <td><?php echo $book->booking_date; ?></td>
+                            <td><?php echo $book->time_slot; ?></td>
+                            <td><?php echo $book->screen_number; ?></td>
+                            <td><?php echo $book->price; ?></td>
+                            <td><?php echo $book->selected_seats; ?></td>
+                            <td><?php echo $book->customer_name; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
